@@ -1,12 +1,13 @@
 # 核心记忆注入插件
 
-将 `核心用户记忆.txt` 的内容持续注入到 AI 系统提示词中的 [my-neuro](https://github.com/MoeVoiceStudio/my-neuro) 插件。
+将 `核心用户记忆.txt` 的内容持续注入到 AI 系统提示词中的 [my-neuro](https://github.com/morettt/my-neuro) 插件。
 
 ## 功能
 
-- **启动自动注入**：应用启动时自动读取 `AI记录室/核心用户记忆.txt`，注入到系统提示词
-- **文件变更监听**：核心记忆文件被修改时自动重新注入（1 秒防抖）
-- **压缩安全**：注入内容位于 system 消息中，不会被上下文压缩器移除
+- **每次请求注入**：通过 `onLLMRequest` 钩子，在每次 LLM 调用前将核心记忆注入到系统提示词
+- **文件变更监听**：核心记忆文件被修改时自动重新加载（1 秒防抖）
+- **压缩安全**：注入发生在 API 调用的深拷贝消息中，不影响持久化消息，不会被上下文压缩器移除
+- **多插件兼容**：不使用 `addSystemPromptPatch`，避免与其他插件互相覆盖
 - **零配置**：无需额外配置，放置即用
 
 ## 安装
@@ -28,18 +29,9 @@ live-2d/plugins/community/core-memory-injector/
 
 ## 工作原理
 
-插件利用 my-neuro 插件系统提供的 `addSystemPromptPatch(id, text)` API，在 `onStart` 生命周期将核心记忆文件的全部内容追加到系统提示词末尾。
+插件在启动时读取 `核心用户记忆.txt` 并缓存到内存。每次 LLM 请求触发 `onLLMRequest` 钩子时，将缓存的记忆内容追加到系统提示词末尾。
 
-注入格式：
-
-```
---- Plugin Injections ---
-【核心用户记忆 - 请务必牢记以下内容】
-（核心用户记忆.txt 的完整内容）
---- End Plugin Injections ---
-```
-
-由于内容注入在 `role: system` 的消息中，上下文压缩器只处理 `user/assistant` 消息，因此核心记忆不会被压缩清除。
+由于 `onLLMRequest` 操作的是 `llm-handler.js` 中 `JSON.parse(JSON.stringify(...))` 生成的深拷贝消息，注入不会影响持久化的对话历史，上下文压缩器也无法触及。
 
 ## 核心记忆文件
 
@@ -51,7 +43,7 @@ live-2d/plugins/community/core-memory-injector/
 - 工具使用偏好
 - AI 日志与月度总结
 
-你可以手动编辑该文件，插件会自动检测变更并重新注入。
+你可以手动编辑该文件，插件会自动检测变更并重新加载。
 
 ## 许可
 
