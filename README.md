@@ -57,6 +57,7 @@ live-2d/plugins/community/core-memory-injector/
 
 不用有压力哦！你愿意打开它，就是对我最大的鼓励啦。如果刚好有余力，就请肥牛喝瓶快乐水叭，它会记住你的味道的！🥤❤️
 
+爱发电 https://ifdian.net/a/0923A
 
 ## 许可
 
